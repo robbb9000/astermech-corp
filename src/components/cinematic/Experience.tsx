@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "@/components/brand/Logo";
+import { AssemblyBay } from "@/components/cinematic/AssemblyBay";
 import { ContactDialog } from "@/components/cinematic/ContactDialog";
 import { Finale } from "@/components/cinematic/Finale";
 import { JourneyShowcase } from "@/components/cinematic/JourneyShowcase";
@@ -16,7 +17,6 @@ import {
   type FrameState,
   type LayerState,
 } from "@/cinematic/timeline";
-import { BODY_SRC, HANGAR_SRC, PART_DEFS } from "@/cinematic/parts";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 function readProgress(track: HTMLElement) {
@@ -29,15 +29,8 @@ function applyFrame(
   frame: FrameState,
   layerEls: Record<string, HTMLImageElement | null>,
   copyEls: Record<string, HTMLElement | null>,
-  landingEl: HTMLElement | null,
-  hintEl: HTMLElement | null,
   glowEl: HTMLElement | null,
   railEls: Array<HTMLElement | null>,
-  hangarEl: HTMLImageElement | null,
-  assembledEl: HTMLImageElement | null,
-  partEls: Record<string, HTMLElement | null>,
-  rigEl: HTMLElement | null,
-  assemblyCopyEl: HTMLElement | null,
 ) {
   for (const layer of frame.layers) {
     const el = layerEls[layer.id];
@@ -51,29 +44,7 @@ function applyFrame(
     el.style.opacity = op.toFixed(3);
     el.style.visibility = op > 0.01 ? "visible" : "hidden";
   }
-  if (landingEl) {
-    landingEl.style.opacity = frame.landingOpacity.toFixed(3);
-    landingEl.style.visibility = frame.landingOpacity > 0.01 ? "visible" : "hidden";
-  }
-  if (hintEl) hintEl.style.opacity = frame.scrollHint.toFixed(3);
-  if (glowEl) glowEl.style.opacity = (frame.eyesGlow * 0.7).toFixed(3);
-  if (hangarEl) hangarEl.style.opacity = frame.hangarOpacity.toFixed(3);
-  if (assembledEl) assembledEl.style.opacity = frame.assembledOpacity.toFixed(3);
-  if (rigEl) {
-    rigEl.style.opacity = frame.hangarOpacity > 0.01 ? "1" : "0";
-    rigEl.style.transform = `translate3d(0, ${frame.cameraY.toFixed(2)}%, 0) scale(${frame.cameraScale.toFixed(3)})`;
-  }
-  for (const part of frame.parts) {
-    const el = partEls[part.id];
-    if (!el) continue;
-    el.style.opacity = part.opacity.toFixed(3);
-    el.style.transform = `translate3d(${part.x.toFixed(2)}%, ${part.y.toFixed(2)}%, 0) rotate(${part.rotate.toFixed(2)}deg) scale(${part.scale.toFixed(3)})`;
-  }
-  if (assemblyCopyEl) {
-    assemblyCopyEl.style.opacity = frame.assemblyCopy.toFixed(3);
-    const title = assemblyCopyEl.querySelector("[data-assembly-lines]");
-    if (title) title.innerHTML = frame.assemblyCopyLines.map((l) => `<span class="block">${l}</span>`).join("");
-  }
+  if (glowEl) glowEl.style.opacity = (frame.eyesGlow * 0.55).toFixed(3);
   railEls.forEach((el, i) => {
     if (!el) return;
     el.dataset.active = i === frame.railIndex ? "true" : "false";
@@ -84,28 +55,19 @@ export function Experience() {
   const trackRef = useRef<HTMLDivElement>(null);
   const layerEls = useRef<Record<string, HTMLImageElement | null>>({});
   const copyEls = useRef<Record<string, HTMLElement | null>>({});
-  const landingEl = useRef<HTMLDivElement>(null);
-  const hintEl = useRef<HTMLDivElement>(null);
   const glowEl = useRef<HTMLDivElement>(null);
   const railEls = useRef<Array<HTMLElement | null>>([]);
-  const hangarEl = useRef<HTMLImageElement>(null);
-  const assembledEl = useRef<HTMLImageElement>(null);
-  const partEls = useRef<Record<string, HTMLElement | null>>({});
-  const rigEl = useRef<HTMLDivElement>(null);
-  const assemblyCopyEl = useRef<HTMLDivElement>(null);
-  const liveRef = useRef<string[]>(["landing"]);
+  const liveRef = useRef<string[]>(["build"]);
   const lastFrame = useRef<FrameState | null>(null);
   const reduced = useReducedMotion();
   const [menuOpen, setMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [showMark, setShowMark] = useState(false);
-  const [liveIds, setLiveIds] = useState<string[]>(["landing", "awaken"]);
+  const [liveIds, setLiveIds] = useState<string[]>(["build", "activate"]);
   const pack = getPack();
 
   const allLayers = useMemo(
     () => [
-      { id: "landing", plate: pack.landing },
-      { id: "awaken", plate: pack.awaken },
       { id: "build", plate: pack.build },
       { id: "activate-dark", plate: pack.activateDark },
       { id: "activate", plate: pack.activate },
@@ -124,22 +86,9 @@ export function Experience() {
     const p = readProgress(track);
     const frame = computeFrame(p, reduced);
     lastFrame.current = frame;
-    applyFrame(
-      frame,
-      layerEls.current,
-      copyEls.current,
-      landingEl.current,
-      hintEl.current,
-      glowEl.current,
-      railEls.current,
-      hangarEl.current,
-      assembledEl.current,
-      partEls.current,
-      rigEl.current,
-      assemblyCopyEl.current,
-    );
+    applyFrame(frame, layerEls.current, copyEls.current, glowEl.current, railEls.current);
     const next = frame.layers.filter((l) => l.opacity > 0.02).map((l) => l.id);
-    if (next.length === 0) next.push("landing");
+    if (next.length === 0) next.push("build");
     const prev = liveRef.current;
     const same = next.length === prev.length && next.every((id, i) => id === prev[i]);
     if (!same) {
@@ -186,7 +135,7 @@ export function Experience() {
   );
 
   const mounted = allLayers.filter(
-    (layer) => liveIds.includes(layer.id) || layer.id === "landing",
+    (layer) => liveIds.includes(layer.id) || layer.id === "build",
   );
 
   const layerStyle = (id: string, fallbackOpacity: number) => {
@@ -215,6 +164,34 @@ export function Experience() {
         showMark={showMark}
       />
 
+      <section className="relative z-20 h-svh min-h-svh overflow-hidden bg-void-deep">
+        <img
+          src={pack.landing.src}
+          alt=""
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ objectPosition: pack.landing.objectPosition }}
+        />
+        <div className="stage-vignette pointer-events-none absolute inset-0" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-stage-x text-center">
+          <Logo className="mb-7 size-12 text-fg md:size-14" />
+          <h1 className="font-display text-wordmark tracking-wordmark text-fg">
+            {LANDING_WORDMARK}
+          </h1>
+          <p className="mt-4 font-sans text-kicker tracking-kicker text-muted uppercase">
+            {LANDING_SUBTITLE}
+          </p>
+        </div>
+        <div className="absolute bottom-[max(1.6rem,env(safe-area-inset-bottom))] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2">
+          <span className="font-sans text-kicker tracking-kicker text-muted uppercase">
+            {SCROLL_HINT}
+          </span>
+          <span className="block h-8 w-px bg-fg/40" />
+        </div>
+      </section>
+
+      <AssemblyBay />
+
       <div
         ref={trackRef}
         className="relative"
@@ -231,58 +208,13 @@ export function Experience() {
               alt=""
               draggable={false}
               decoding="async"
-              fetchPriority={layer.id === "landing" ? "high" : "low"}
               className="absolute inset-0 h-full w-full object-cover"
               style={{
                 objectPosition: layer.plate.objectPosition,
-                ...layerStyle(layer.id, layer.id === "landing" ? 1 : 0),
+                ...layerStyle(layer.id, layer.id === "build" ? 1 : 0),
               }}
             />
           ))}
-
-          <img
-            ref={hangarEl}
-            src={HANGAR_SRC}
-            alt=""
-            draggable={false}
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{ opacity: 0 }}
-          />
-          <div
-            ref={rigEl}
-            className="assemble-rig"
-            style={{ opacity: 0 }}
-          >
-            {PART_DEFS.map((part) => (
-              <div
-                key={part.id}
-                ref={(el) => {
-                  partEls.current[part.id] = el;
-                }}
-                className="assemble-part"
-                data-part={part.id}
-                style={{ opacity: 0 }}
-              >
-                <img src={part.src} alt="" draggable={false} />
-              </div>
-            ))}
-            <img
-              ref={assembledEl}
-              src={BODY_SRC}
-              alt=""
-              draggable={false}
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ opacity: 0 }}
-            />
-          </div>
-          <div
-            ref={assemblyCopyEl}
-            className="stage-copy pointer-events-none"
-            style={{ opacity: 0 }}
-          >
-            <h2 className="cinematic-title text-cinematic text-fg" data-assembly-lines />
-            <span className="mt-5 block h-px w-8 bg-signal" />
-          </div>
 
           <div
             ref={glowEl}
@@ -291,19 +223,6 @@ export function Experience() {
           />
 
           <div className="stage-vignette pointer-events-none absolute inset-0" />
-
-          <div
-            ref={landingEl}
-            className="absolute inset-0 flex flex-col items-center justify-center px-stage-x text-center"
-          >
-            <Logo className="mb-7 size-12 text-fg md:size-14" />
-            <h1 className="font-display text-wordmark tracking-wordmark text-fg">
-              {LANDING_WORDMARK}
-            </h1>
-            <p className="mt-4 font-sans text-kicker tracking-kicker text-muted uppercase">
-              {LANDING_SUBTITLE}
-            </p>
-          </div>
 
           {SCENE_COPY.map((scene) => (
             <div
@@ -334,16 +253,6 @@ export function Experience() {
               ) : null}
             </div>
           ))}
-
-          <div
-            ref={hintEl}
-            className="absolute bottom-[max(1.6rem,env(safe-area-inset-bottom))] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2"
-          >
-            <span className="font-sans text-kicker tracking-kicker text-muted uppercase">
-              {SCROLL_HINT}
-            </span>
-            <span className="block h-8 w-px bg-fg/40" />
-          </div>
 
           <ol className="stage-rail" aria-hidden>
             {BEAT_ORDER.map((id: BeatId, i) => (

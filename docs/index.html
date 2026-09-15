@@ -41,12 +41,33 @@
     </div>
 
     <main id="top">
-      <div id="phoneFilm"></div>
-      <div id="deskFilm" hidden>
+      <section class="landing" id="landing">
+        <img src="./cinematic/v1/landing.jpg" alt="" />
+        <div class="vignette"></div>
+        <div class="hero">
+          <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true">
+            <path fill="currentColor" fill-rule="evenodd" d="M16 5 L28 27 H4 Z M16 12.5 L21.2 23 H10.8 Z"/>
+          </svg>
+          <h1>ASTERMECH CORP</h1>
+          <p class="kicker">Independent software studio</p>
+        </div>
+        <div class="hint">Scroll<b></b></div>
+      </section>
+
+      <section class="assembly-track" id="assembly">
+        <div class="assembly-stage">
+          <img class="hangar" src="./cinematic/v1/sprites/hangar.jpg" alt="" />
+          <div class="assembly-rig" id="rig"></div>
+          <div class="vignette"></div>
+        </div>
+      </section>
+
+      <div id="deskFilm">
         <div class="track" id="track">
           <div class="stage" id="stage"></div>
         </div>
       </div>
+      <div id="phoneFilm" hidden></div>
 
       <section id="products" class="products">
         <div class="products-grid">

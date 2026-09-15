@@ -78,28 +78,44 @@
     background-color: #05070c;
   }
 
-  .assemble-rig {
+  .assembly-rig {
     position: absolute;
-    inset: 0;
-    transform-origin: 50% 28%;
-    will-change: transform;
+    left: 50%;
+    top: 6%;
+    width: min(38vh, 46vw);
+    height: 88%;
+    transform: translate3d(-50%, 18%, 0) scale(2.05);
+    transform-origin: 50% 8%;
     pointer-events: none;
+    will-change: transform;
   }
 
-  .assemble-part {
+  .assembly-sprite {
     position: absolute;
-    inset: 0;
     pointer-events: none;
     will-change: transform, opacity;
   }
 
-  .assemble-part img {
-    position: absolute;
-    inset: 0;
+  .assembly-sprite img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center center;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    filter: drop-shadow(0 12px 18px rgb(0 0 0 / 0.45));
+  }
+
+  .assembly-eyes {
+    position: absolute;
+    left: 38%;
+    top: 7.5%;
+    width: 24%;
+    height: 4%;
+    border-radius: 999px;
+    background: rgb(229 57 53 / 0.9);
+    filter: blur(10px);
+    opacity: 0;
+    pointer-events: none;
   }
 
   .stage-vignette {

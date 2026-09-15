@@ -1,8 +1,7 @@
 import { getPack, type Plate } from "./assets";
 import { SCENE_COPY, type SceneCopy } from "./copy";
-import { ASSEMBLY_COPY, PART_DEFS, type PartId } from "./parts";
 
-export const CINEMATIC_VH = 2000;
+export const CINEMATIC_VH = 1400;
 
 export function clamp01(n: number) {
   return n < 0 ? 0 : n > 1 ? 1 : n;
@@ -32,9 +31,6 @@ export function holdFade(
 }
 
 export type BeatId =
-  | "landing"
-  | "awaken"
-  | "assembly"
   | "build"
   | "activate"
   | "launch"
@@ -45,22 +41,16 @@ export type BeatId =
 
 export const BEATS: Record<BeatId, { in0: number; in1: number; out0: number; out1: number }> =
   {
-    landing: { in0: -0.02, in1: 0.0, out0: 0.03, out1: 0.055 },
-    awaken: { in0: 0.03, in1: 0.055, out0: 0.09, out1: 0.12 },
-    assembly: { in0: 0.09, in1: 0.12, out0: 0.52, out1: 0.56 },
-    build: { in0: 0.515, in1: 0.55, out0: 0.60, out1: 0.635 },
-    activate: { in0: 0.61, in1: 0.645, out0: 0.72, out1: 0.755 },
-    launch: { in0: 0.73, in1: 0.765, out0: 0.82, out1: 0.85 },
-    beyond: { in0: 0.825, in1: 0.85, out0: 0.885, out1: 0.91 },
-    arrival: { in0: 0.89, in1: 0.915, out0: 0.94, out1: 0.96 },
-    observation: { in0: 0.94, in1: 0.96, out0: 0.985, out1: 0.995 },
-    vision: { in0: 0.98, in1: 0.992, out0: 1.05, out1: 1.08 },
+    build: { in0: -0.02, in1: 0.0, out0: 0.12, out1: 0.16 },
+    activate: { in0: 0.12, in1: 0.16, out0: 0.32, out1: 0.37 },
+    launch: { in0: 0.33, in1: 0.38, out0: 0.52, out1: 0.57 },
+    beyond: { in0: 0.53, in1: 0.57, out0: 0.68, out1: 0.73 },
+    arrival: { in0: 0.69, in1: 0.74, out0: 0.82, out1: 0.86 },
+    observation: { in0: 0.83, in1: 0.87, out0: 0.93, out1: 0.96 },
+    vision: { in0: 0.94, in1: 0.97, out0: 1.05, out1: 1.08 },
   };
 
 export const BEAT_ORDER: BeatId[] = [
-  "landing",
-  "awaken",
-  "assembly",
   "build",
   "activate",
   "launch",
@@ -80,46 +70,12 @@ export type LayerState = {
   armed: boolean;
 };
 
-export type PartState = {
-  id: PartId;
-  opacity: number;
-  x: number;
-  y: number;
-  rotate: number;
-  scale: number;
-};
-
-export function computeParts(t: number): PartState[] {
-  return PART_DEFS.map((def) => {
-    const k = smoothstep(def.in0, def.in1, t);
-    const visible = def.id === "head" ? 1 : t >= def.in0 - 0.02 ? k : 0;
-    return {
-      id: def.id,
-      opacity: visible,
-      x: def.x * (1 - k),
-      y: def.y * (1 - k),
-      rotate: def.rotate * (1 - k),
-      scale: 1,
-    };
-  });
-}
-
 export type FrameState = {
   layers: LayerState[];
   copy: Record<string, number>;
-  landingOpacity: number;
-  scrollHint: number;
   eyesGlow: number;
   railIndex: number;
   progress: number;
-  hangarOpacity: number;
-  parts: PartState[];
-  assembledOpacity: number;
-  assemblyT: number;
-  cameraScale: number;
-  cameraY: number;
-  assemblyCopy: number;
-  assemblyCopyLines: readonly string[];
 };
 
 function ken(local: number, reduced: boolean) {
@@ -156,48 +112,16 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
   const pack = getPack();
   const layers: LayerState[] = [];
 
-  const landOp = beatOpacity(p, "landing");
-  layers.push(layer("landing", pack.landing, landOp, remap(p, 0, 0.09), reduced));
-
-  const awakenOp = beatOpacity(p, "awaken");
-  layers.push(layer("awaken", pack.awaken, awakenOp, remap(p, 0.035, 0.15), reduced));
-
-  const assemblyOp = beatOpacity(p, "assembly");
-  const assemblyT = remap(p, BEATS.assembly.in0, BEATS.assembly.out0);
-  const t = reduced ? 1 : assemblyT;
-  const parts = computeParts(t).map((part) => ({
-    ...part,
-    opacity: part.opacity * assemblyOp,
-  }));
-  const assembledOpacity = assemblyOp * smoothstep(0.8, 0.93, t);
-  const cameraScale = 1.52 - 0.52 * smoothstep(0.05, 0.92, t);
-  const cameraY = (1 - smoothstep(0.0, 0.88, t)) * 16;
-  let assemblyCopyLines: readonly string[] = ASSEMBLY_COPY[0].lines;
-  for (const block of ASSEMBLY_COPY) {
-    if (t >= block.at) assemblyCopyLines = block.lines;
-  }
-  const assemblyEyes = assemblyOp * smoothstep(0.88, 0.97, t);
-
   const buildOp = beatOpacity(p, "build");
-  layers.push(
-    layer("build", pack.build, buildOp, remap(p, 0.515, 0.635), reduced, {
-      y: reduced ? 0 : remap(p, 0.515, 0.635) * -1.5,
-    }),
-  );
+  layers.push(layer("build", pack.build, buildOp, remap(p, 0, 0.16), reduced));
 
   const actOp = beatOpacity(p, "activate");
   const actLocal = remap(p, BEATS.activate.in0, BEATS.activate.out1);
-  const eyes = smoothstep(0.28, 0.62, actLocal);
+  const eyes = smoothstep(0.2, 0.55, actLocal);
   layers.push(
-    layer("activate-dark", pack.activateDark, actOp * (1 - eyes) + actOp * 0.08, actLocal, reduced, {
-      scale: 1 + actLocal * 0.04,
-    }),
+    layer("activate-dark", pack.activateDark, actOp * (1 - eyes) + actOp * 0.08, actLocal, reduced),
   );
-  layers.push(
-    layer("activate", pack.activate, actOp * eyes, actLocal, reduced, {
-      scale: 1 + actLocal * 0.04,
-    }),
-  );
+  layers.push(layer("activate", pack.activate, actOp * eyes, actLocal, reduced));
 
   const launchOp = beatOpacity(p, "launch");
   const launchLocal = remap(p, BEATS.launch.in0, BEATS.launch.out1);
@@ -208,22 +132,12 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
     }),
   );
 
-  const beyondOp = beatOpacity(p, "beyond");
-  layers.push(layer("beyond", pack.beyond, beyondOp, remap(p, 0.825, 0.91), reduced));
-
-  const arrivalOp = beatOpacity(p, "arrival");
-  const arrivalLocal = remap(p, BEATS.arrival.in0, BEATS.arrival.out1);
+  layers.push(layer("beyond", pack.beyond, beatOpacity(p, "beyond"), remap(p, 0.53, 0.73), reduced));
+  layers.push(layer("arrival", pack.arrival, beatOpacity(p, "arrival"), remap(p, 0.69, 0.86), reduced));
   layers.push(
-    layer("arrival", pack.arrival, arrivalOp, arrivalLocal, reduced, {
-      scale: 1 + arrivalLocal * 0.05,
-    }),
+    layer("observation", pack.observation, beatOpacity(p, "observation"), remap(p, 0.83, 0.96), reduced),
   );
-
-  const obsOp = beatOpacity(p, "observation");
-  layers.push(layer("observation", pack.observation, obsOp, remap(p, 0.94, 0.995), reduced));
-
-  const visOp = beatOpacity(p, "vision");
-  layers.push(layer("vision", pack.vision, visOp, remap(p, 0.98, 1), reduced));
+  layers.push(layer("vision", pack.vision, beatOpacity(p, "vision"), remap(p, 0.94, 1), reduced));
 
   const copy: Record<string, number> = {};
   for (const scene of SCENE_COPY) {
@@ -234,13 +148,12 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
     }
     copy[scene.id] = holdFade(
       p,
-      beat.in0 + 0.012,
+      beat.in0 + 0.01,
       beat.in1 + 0.008,
       beat.out0 - 0.008,
       beat.out1 - 0.008,
     );
   }
-  copy.assembly = 0;
 
   let railIndex = 0;
   let best = -1;
@@ -255,19 +168,9 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
   return {
     layers,
     copy,
-    landingOpacity: holdFade(p, -0.02, 0, 0.028, 0.07),
-    scrollHint: holdFade(p, -0.02, 0, 0.012, 0.05),
-    eyesGlow: Math.max(actOp * eyes, assemblyEyes),
+    eyesGlow: actOp * eyes,
     railIndex,
     progress: p,
-    hangarOpacity: assemblyOp,
-    parts,
-    assembledOpacity,
-    assemblyT: t,
-    cameraScale: reduced ? 1 : cameraScale,
-    cameraY: reduced ? 0 : cameraY,
-    assemblyCopy: assemblyOp,
-    assemblyCopyLines,
   };
 }
 
