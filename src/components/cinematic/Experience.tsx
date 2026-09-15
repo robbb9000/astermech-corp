@@ -4,7 +4,6 @@ import { ContactDialog } from "@/components/cinematic/ContactDialog";
 import { Finale } from "@/components/cinematic/Finale";
 import { JourneyShowcase } from "@/components/cinematic/JourneyShowcase";
 import { NavBar } from "@/components/cinematic/NavBar";
-import { PhoneFilm } from "@/components/cinematic/PhoneFilm";
 import { getPack } from "@/cinematic/assets";
 import { LANDING_SUBTITLE, LANDING_WORDMARK, SCENE_COPY, SCROLL_HINT } from "@/cinematic/copy";
 import {
@@ -58,7 +57,7 @@ function applyFrame(
   });
 }
 
-function DesktopFilm() {
+export function Experience() {
   const trackRef = useRef<HTMLDivElement>(null);
   const layerEls = useRef<Record<string, HTMLImageElement | null>>({});
   const copyEls = useRef<Record<string, HTMLElement | null>>({});
@@ -291,18 +290,4 @@ function DesktopFilm() {
       <ContactDialog open={contactOpen} onClose={() => setContactOpen(false)} />
     </div>
   );
-}
-
-export function Experience() {
-  const [desktop, setDesktop] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const apply = () => setDesktop(mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-
-  return desktop ? <DesktopFilm /> : <PhoneFilm />;
 }

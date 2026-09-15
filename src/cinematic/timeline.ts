@@ -1,8 +1,8 @@
 import { getPack, type Plate } from "./assets";
 import { SCENE_COPY, type SceneCopy } from "./copy";
 
-/** Viewport-heights of the pinned cinematic track (scenes 01–10). */
-export const CINEMATIC_VH = 1400;
+/** Viewport-heights of the pinned cinematic track. Long enough for a real build. */
+export const CINEMATIC_VH = 1800;
 
 export function clamp01(n: number) {
   return n < 0 ? 0 : n > 1 ? 1 : n;
@@ -47,16 +47,16 @@ export type BeatId =
 /** Inclusive progress windows for each cinematic beat. */
 export const BEATS: Record<BeatId, { in0: number; in1: number; out0: number; out1: number }> =
   {
-    landing: { in0: -0.02, in1: 0.0, out0: 0.04, out1: 0.08 },
-    awaken: { in0: 0.045, in1: 0.085, out0: 0.13, out1: 0.17 },
-    assembly: { in0: 0.13, in1: 0.17, out0: 0.34, out1: 0.385 },
-    build: { in0: 0.345, in1: 0.385, out0: 0.445, out1: 0.485 },
-    activate: { in0: 0.45, in1: 0.49, out0: 0.58, out1: 0.62 },
-    launch: { in0: 0.585, in1: 0.625, out0: 0.69, out1: 0.73 },
-    beyond: { in0: 0.695, in1: 0.735, out0: 0.79, out1: 0.825 },
-    arrival: { in0: 0.795, in1: 0.83, out0: 0.875, out1: 0.905 },
-    observation: { in0: 0.88, in1: 0.91, out0: 0.955, out1: 0.98 },
-    vision: { in0: 0.95, in1: 0.978, out0: 1.05, out1: 1.08 },
+    landing: { in0: -0.02, in1: 0.0, out0: 0.03, out1: 0.06 },
+    awaken: { in0: 0.035, in1: 0.065, out0: 0.11, out1: 0.145 },
+    assembly: { in0: 0.11, in1: 0.145, out0: 0.50, out1: 0.545 },
+    build: { in0: 0.515, in1: 0.55, out0: 0.60, out1: 0.635 },
+    activate: { in0: 0.61, in1: 0.645, out0: 0.72, out1: 0.755 },
+    launch: { in0: 0.73, in1: 0.765, out0: 0.82, out1: 0.85 },
+    beyond: { in0: 0.825, in1: 0.85, out0: 0.885, out1: 0.91 },
+    arrival: { in0: 0.89, in1: 0.915, out0: 0.94, out1: 0.96 },
+    observation: { in0: 0.94, in1: 0.96, out0: 0.985, out1: 0.995 },
+    vision: { in0: 0.98, in1: 0.992, out0: 1.05, out1: 1.08 },
   };
 
 export const BEAT_ORDER: BeatId[] = [
@@ -133,7 +133,7 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
 
   const awakenOp = beatOpacity(p, "awaken");
   layers.push(
-    layer("awaken", pack.awaken, awakenOp, remap(p, 0.05, 0.185), reduced),
+    layer("awaken", pack.awaken, awakenOp, remap(p, 0.035, 0.15), reduced),
   );
 
   const assemblyOp = beatOpacity(p, "assembly");
@@ -157,8 +157,8 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
 
   const buildOp = beatOpacity(p, "build");
   layers.push(
-    layer("build", pack.build, buildOp, remap(p, 0.325, 0.475), reduced, {
-      y: reduced ? 0 : remap(p, 0.325, 0.475) * -1.5,
+    layer("build", pack.build, buildOp, remap(p, 0.515, 0.635), reduced, {
+      y: reduced ? 0 : remap(p, 0.515, 0.635) * -1.5,
     }),
   );
 
@@ -187,7 +187,7 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
 
   const beyondOp = beatOpacity(p, "beyond");
   layers.push(
-    layer("beyond", pack.beyond, beyondOp, remap(p, 0.66, 0.805), reduced),
+    layer("beyond", pack.beyond, beyondOp, remap(p, 0.825, 0.91), reduced),
   );
 
   const arrivalOp = beatOpacity(p, "arrival");
@@ -204,14 +204,14 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
       "observation",
       pack.observation,
       obsOp,
-      remap(p, 0.86, 0.975),
+      remap(p, 0.94, 0.995),
       reduced,
     ),
   );
 
   const visOp = beatOpacity(p, "vision");
   layers.push(
-    layer("vision", pack.vision, visOp, remap(p, 0.945, 1), reduced),
+    layer("vision", pack.vision, visOp, remap(p, 0.98, 1), reduced),
   );
 
   const copy: Record<string, number> = {};

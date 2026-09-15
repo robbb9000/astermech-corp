@@ -17,7 +17,7 @@ export type Plate = {
   objectPosition: string;
 };
 
-const bust = "v3";
+const bust = "v5";
 
 const v1 = {
   landing: {

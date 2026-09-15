@@ -32,21 +32,28 @@ const COPY = {
 };
 
 const BEATS = {
-  landing: [ -0.02, 0, 0.04, 0.08 ],
-  awaken: [ 0.045, 0.085, 0.13, 0.17 ],
-  assembly: [ 0.13, 0.17, 0.34, 0.385 ],
-  build: [ 0.345, 0.385, 0.445, 0.485 ],
-  activate: [ 0.45, 0.49, 0.58, 0.62 ],
-  launch: [ 0.585, 0.625, 0.69, 0.73 ],
-  beyond: [ 0.695, 0.735, 0.79, 0.825 ],
-  arrival: [ 0.795, 0.83, 0.875, 0.905 ],
-  observation: [ 0.88, 0.91, 0.955, 0.98 ],
-  vision: [ 0.95, 0.978, 1.05, 1.08 ],
+  landing: [-0.02, 0, 0.03, 0.06],
+  awaken: [0.035, 0.065, 0.11, 0.145],
+  assembly: [0.11, 0.145, 0.50, 0.545],
+  build: [0.515, 0.55, 0.60, 0.635],
+  activate: [0.61, 0.645, 0.72, 0.755],
+  launch: [0.73, 0.765, 0.82, 0.85],
+  beyond: [0.825, 0.85, 0.885, 0.91],
+  arrival: [0.89, 0.915, 0.94, 0.96],
+  observation: [0.94, 0.96, 0.985, 0.995],
+  vision: [0.98, 0.992, 1.05, 1.08],
 };
 
-function clamp01(n) { return n < 0 ? 0 : n > 1 ? 1 : n; }
-function remap(v, a, b) { return b === a ? 0 : clamp01((v - a) / (b - a)); }
-function smooth(e0, e1, x) { const t = remap(x, e0, e1); return t * t * (3 - 2 * t); }
+function clamp01(n) {
+  return n < 0 ? 0 : n > 1 ? 1 : n;
+}
+function remap(v, a, b) {
+  return b === a ? 0 : clamp01((v - a) / (b - a));
+}
+function smooth(e0, e1, x) {
+  const t = remap(x, e0, e1);
+  return t * t * (3 - 2 * t);
+}
 function hold(p, a, b, c, d) {
   if (p <= a || p >= d) return 0;
   if (p < b) return smooth(a, b, p);
@@ -65,62 +72,11 @@ function copyHtml(id) {
   </div>`;
 }
 
-function imgEl(id, plate, extra = "") {
-  return `<img data-layer="${id}" src="${plate.src}" alt="" style="object-position:${plate.pos}" ${extra}/>`;
+function imgEl(id, plate) {
+  return `<img data-layer="${id}" src="${plate.src}" alt="" style="object-position:${plate.pos};opacity:0"/>`;
 }
 
-function buildPhone() {
-  const root = document.getElementById("phoneFilm");
-  const panels = [
-    { id: "awaken", plate: PACK.awaken, copy: "awaken" },
-    { id: "assembly-start", plate: PACK.a1 },
-    { id: "assembly", plate: PACK.a2, copy: "assembly" },
-    { id: "activate", plate: PACK.activate, copy: "activate" },
-    { id: "build", plate: PACK.build, copy: "build" },
-    { id: "launch", plate: PACK.launch, copy: "launch" },
-    { id: "observation", plate: PACK.observation, copy: "observation" },
-    { id: "vision", plate: PACK.vision, copy: "vision" },
-  ];
-  root.innerHTML =
-    `<section class="film is-in">
-      ${imgEl("landing", PACK.landing, 'class="ken"')}
-      <div class="vignette"></div>
-      <div class="hero">
-        <svg viewBox="0 0 32 32" width="48" height="48" aria-hidden="true">
-          <path fill="currentColor" fill-rule="evenodd" d="M16 5 L28 27 H4 Z M16 12.5 L21.2 23 H10.8 Z"/>
-        </svg>
-        <h1>ASTERMECH CORP</h1>
-        <p class="kicker">Independent software studio</p>
-      </div>
-      <div class="hint">Scroll<b></b></div>
-    </section>` +
-    panels
-      .map(
-        (p) =>
-          `<section class="film" id="${p.id}">
-            ${imgEl(p.id, p.plate)}
-            <div class="vignette"></div>
-            ${p.copy ? copyHtml(p.copy) : ""}
-          </section>`,
-      )
-      .join("");
-
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add("is-in");
-          const img = e.target.querySelector("img");
-          if (img) img.classList.add("ken");
-        }
-      });
-    },
-    { threshold: 0.28 },
-  );
-  root.querySelectorAll(".film").forEach((el) => io.observe(el));
-}
-
-function buildDesk() {
+function buildFilm() {
   const stage = document.getElementById("stage");
   const layers = [
     ["landing", PACK.landing],
@@ -145,12 +101,16 @@ function buildDesk() {
        <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true">
          <path fill="currentColor" fill-rule="evenodd" d="M16 5 L28 27 H4 Z M16 12.5 L21.2 23 H10.8 Z"/>
        </svg>
-       <h2 style="font-family:var(--display);letter-spacing:.42em;text-transform:none;font-weight:500">ASTERMECH CORP</h2>
+       <h1>ASTERMECH CORP</h1>
        <p class="kicker">Independent software studio</p>
      </div>
      <div class="hint" id="hint">Scroll<b></b></div>
-     <ol class="rail" id="rail">${Object.keys(BEATS).map((id, i) => `<li data-i="${i}">${String(i + 1).padStart(2, "0")}</li>`).join("")}</ol>` +
-    Object.keys(COPY).map((id) => copyHtml(id)).join("");
+     <ol class="rail" id="rail">${Object.keys(BEATS)
+       .map((id, i) => `<li data-i="${i}">${String(i + 1).padStart(2, "0")}</li>`)
+       .join("")}</ol>` +
+    Object.keys(COPY)
+      .map((id) => copyHtml(id))
+      .join("");
 
   const imgs = Object.fromEntries(
     [...stage.querySelectorAll("img[data-layer]")].map((el) => [el.dataset.layer, el]),
@@ -162,41 +122,60 @@ function buildDesk() {
   const hint = document.getElementById("hint");
   const track = document.getElementById("track");
   const order = Object.keys(BEATS);
+  const assemblyIds = ["assembly-0", "assembly-1", "assembly-2", "assembly-3"];
+
+  function setLayer(id, op, y = 0, s = 1) {
+    const el = imgs[id];
+    if (!el) return;
+    el.style.opacity = String(Math.max(0, Math.min(1, op)));
+    el.style.transform = `translate3d(0, ${y}%, 0) scale(${s})`;
+  }
 
   function paint() {
     const total = track.offsetHeight - innerHeight;
     const p = total <= 0 ? 0 : clamp01(-track.getBoundingClientRect().top / total);
-    const set = (id, op, y = 0, s = 1) => {
-      const el = imgs[id];
-      if (!el) return;
-      el.style.opacity = op.toFixed(3);
-      el.style.transform = `translate3d(0, ${y}%, 0) scale(${s})`;
-    };
     const beat = (id) => hold(p, ...BEATS[id]);
+
     const land = beat("landing");
-    set("landing", land, -land * 2, 1 + land * 0.04);
-    set("awaken", beat("awaken"));
-    const a = remap(p, 0.13, 0.34);
-    set("assembly-0", hold(p, 0.13, 0.17, 0.18, 0.22) * (1 - a));
-    set("assembly-1", hold(p, 0.18, 0.22, 0.24, 0.28));
-    set("assembly-2", hold(p, 0.24, 0.28, 0.3, 0.34));
-    set("assembly-3", hold(p, 0.3, 0.34, 0.34, 0.385));
-    set("build", beat("build"));
+    setLayer("landing", land, -land * 2, 1 + land * 0.04);
+    setLayer("awaken", beat("awaken"));
+
+    const assemblyOp = beat("assembly");
+    const assemblyT = remap(p, BEATS.assembly[0], BEATS.assembly[3]);
+    const n = assemblyIds.length;
+    const f = assemblyT * (n - 1);
+    const i0 = Math.min(n - 1, Math.floor(f));
+    const i1 = Math.min(n - 1, i0 + 1);
+    const mix = f - i0;
+    assemblyIds.forEach((id, i) => {
+      let op = 0;
+      if (i === i0) op = assemblyOp * (1 - mix);
+      if (i === i1) op = Math.max(op, assemblyOp * mix);
+      if (i === i0 && i === i1) op = assemblyOp;
+      setLayer(id, op, 0, 1 + assemblyT * 0.03);
+    });
+
+    setLayer("build", beat("build"));
     const act = beat("activate");
-    set("activate-dark", act * (1 - remap(p, 0.5, 0.54)));
-    set("activate", act * remap(p, 0.5, 0.54));
-    set("launch", beat("launch"), -remap(p, 0.585, 0.73) * 4, 1.02);
-    set("beyond", beat("beyond"));
-    set("arrival", beat("arrival"));
-    set("observation", beat("observation"));
-    set("vision", beat("vision"));
-    copies.landing.style.opacity = land.toFixed(3);
-    hint.style.opacity = land.toFixed(3);
+    const eyes = smooth(0.28, 0.62, remap(p, BEATS.activate[0], BEATS.activate[3]));
+    setLayer("activate-dark", act * (1 - eyes));
+    setLayer("activate", act * eyes);
+    const launchT = remap(p, BEATS.launch[0], BEATS.launch[3]);
+    setLayer("launch", beat("launch"), -launchT * 6, 1 + launchT * 0.08);
+    setLayer("beyond", beat("beyond"));
+    setLayer("arrival", beat("arrival"));
+    setLayer("observation", beat("observation"));
+    setLayer("vision", beat("vision"));
+
+    copies.landing.style.opacity = String(land);
+    hint.style.opacity = String(land);
     Object.keys(COPY).forEach((id) => {
-      copies[id].style.opacity = beat(id).toFixed(3);
+      copies[id].style.opacity = String(beat(id));
     });
     let railIndex = 0;
-    order.forEach((id, i) => { if (p >= BEATS[id][0]) railIndex = i; });
+    order.forEach((id, i) => {
+      if (p >= BEATS[id][0]) railIndex = i;
+    });
     rail.forEach((el, i) => el.classList.toggle("on", i === railIndex));
     document.getElementById("mark").classList.toggle("is-on", scrollY > 80);
   }
@@ -220,12 +199,7 @@ document.getElementById("menuBtn").addEventListener("click", () => {
   menu.hidden = !menu.hidden;
 });
 
-const desktop = matchMedia("(min-width: 768px)").matches;
-if (desktop) {
-  document.getElementById("deskFilm").hidden = false;
-  document.getElementById("phoneFilm").hidden = true;
-  buildDesk();
-} else {
-  buildPhone();
-  document.getElementById("mark").classList.add("is-on");
-}
+document.getElementById("deskFilm").hidden = false;
+document.getElementById("phoneFilm").hidden = true;
+document.getElementById("phoneFilm").innerHTML = "";
+buildFilm();

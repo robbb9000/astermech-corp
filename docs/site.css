@@ -17,10 +17,7 @@ html, body {
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
 }
-.skip {
-  position: absolute;
-  left: -999px;
-}
+.skip { position: absolute; left: -999px; }
 .nav {
   position: fixed;
   inset: 0 0 auto;
@@ -75,6 +72,9 @@ html, body {
   font-size: 1.2rem;
 }
 
+#deskFilm { display: block; }
+#phoneFilm { display: none !important; }
+
 .film, .stage {
   position: relative;
   min-height: 640px;
@@ -104,6 +104,7 @@ html, body {
   z-index: 2;
   padding: 0 clamp(1.15rem, 5vw, 5.25rem) max(4.75rem, env(safe-area-inset-bottom) + 2.4rem);
   background: linear-gradient(to top, rgb(5 7 12 / 0.82), rgb(5 7 12 / 0.28) 58%, transparent);
+  opacity: 0;
 }
 .copy h2 {
   margin: 0;
@@ -125,8 +126,7 @@ html, body {
 .hero {
   position: relative;
   z-index: 2;
-  min-height: 640px;
-  min-height: 100svh;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -157,15 +157,13 @@ html, body {
 }
 .hint b { width: 1px; height: 2rem; background: rgb(244 246 248 / 0.4); }
 
-.track { height: 1400vh; position: relative; }
+.track { height: 1800vh; position: relative; }
 .stage {
   position: sticky;
   top: 0;
   height: 100vh;
   height: 100dvh;
 }
-.stage img { opacity: 0; }
-.stage .copy { opacity: 0; }
 .rail {
   position: absolute;
   right: 1.2rem;
@@ -184,9 +182,7 @@ html, body {
 }
 .rail .on { color: var(--signal); }
 
-.products {
-  padding: 6rem clamp(1.15rem, 5vw, 5.25rem) 7rem;
-}
+.products { padding: 6rem clamp(1.15rem, 5vw, 5.25rem) 7rem; }
 .products-grid { max-width: 70rem; margin: 0 auto; display: grid; gap: 3rem; }
 .product-name {
   font-family: var(--display);
@@ -249,21 +245,9 @@ html, body {
 }
 .finale-copy p { color: var(--muted); max-width: 28rem; margin: 1.2rem auto 0; }
 
-.film.is-in .copy { animation: up 0.7s ease both; }
-.film.is-in img.ken { animation: ken 22s ease-out forwards; }
-@keyframes up {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: none; }
-}
-@keyframes ken {
-  from { transform: scale(1.05); }
-  to { transform: scale(1.14) translateY(-2%); }
-}
-
 @media (min-width: 768px) {
-  .menu-btn, #phoneFilm { display: none; }
+  .menu-btn { display: none; }
   .desk-nav, .rail { display: flex; }
-  #deskFilm { display: block; }
   .copy {
     inset: auto auto auto 0;
     top: 50%;
@@ -276,5 +260,5 @@ html, body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .film.is-in img.ken, .film.is-in .copy { animation: none; }
+  html { scroll-behavior: auto; }
 }
