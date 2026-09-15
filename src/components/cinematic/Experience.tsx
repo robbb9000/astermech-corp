@@ -10,11 +10,13 @@ import {
   BEAT_ORDER,
   CINEMATIC_VH,
   computeFrame,
+  PART_ORDER,
   progressForBeat,
   scrollYForProgress,
   type BeatId,
   type FrameState,
   type LayerState,
+  type PartId,
 } from "@/cinematic/timeline";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
@@ -32,6 +34,9 @@ function applyFrame(
   hintEl: HTMLElement | null,
   glowEl: HTMLElement | null,
   railEls: Array<HTMLElement | null>,
+  hangarEl: HTMLImageElement | null,
+  assembledEl: HTMLImageElement | null,
+  partEls: Record<string, HTMLElement | null>,
 ) {
   for (const layer of frame.layers) {
     const el = layerEls[layer.id];
@@ -51,6 +56,14 @@ function applyFrame(
   }
   if (hintEl) hintEl.style.opacity = frame.scrollHint.toFixed(3);
   if (glowEl) glowEl.style.opacity = (frame.eyesGlow * 0.55).toFixed(3);
+  if (hangarEl) hangarEl.style.opacity = frame.hangarOpacity.toFixed(3);
+  if (assembledEl) assembledEl.style.opacity = frame.assembledOpacity.toFixed(3);
+  for (const part of frame.parts) {
+    const el = partEls[part.id];
+    if (!el) continue;
+    el.style.opacity = part.opacity.toFixed(3);
+    el.style.transform = `translate3d(${part.x.toFixed(2)}%, ${part.y.toFixed(2)}%, 0) scale(${part.scale.toFixed(3)})`;
+  }
   railEls.forEach((el, i) => {
     if (!el) return;
     el.dataset.active = i === frame.railIndex ? "true" : "false";
@@ -65,6 +78,9 @@ export function Experience() {
   const hintEl = useRef<HTMLDivElement>(null);
   const glowEl = useRef<HTMLDivElement>(null);
   const railEls = useRef<Array<HTMLElement | null>>([]);
+  const hangarEl = useRef<HTMLImageElement>(null);
+  const assembledEl = useRef<HTMLImageElement>(null);
+  const partEls = useRef<Record<string, HTMLElement | null>>({});
   const liveRef = useRef<string[]>(["landing"]);
   const lastFrame = useRef<FrameState | null>(null);
   const reduced = useReducedMotion();
@@ -78,7 +94,6 @@ export function Experience() {
     () => [
       { id: "landing", plate: pack.landing },
       { id: "awaken", plate: pack.awaken },
-      ...pack.assembly.map((plate, i) => ({ id: `assembly-${i}`, plate })),
       { id: "build", plate: pack.build },
       { id: "activate-dark", plate: pack.activateDark },
       { id: "activate", plate: pack.activate },
@@ -105,6 +120,9 @@ export function Experience() {
       hintEl.current,
       glowEl.current,
       railEls.current,
+      hangarEl.current,
+      assembledEl.current,
+      partEls.current,
     );
     const next = frame.layers.filter((l) => l.opacity > 0.02).map((l) => l.id);
     if (next.length === 0) next.push("landing");
@@ -207,6 +225,42 @@ export function Experience() {
               }}
             />
           ))}
+
+          <img
+            ref={hangarEl}
+            src={pack.hangar.src}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: pack.hangar.objectPosition, opacity: 0 }}
+          />
+          {PART_ORDER.map((id: PartId) => (
+            <div
+              key={id}
+              ref={(el) => {
+                partEls.current[id] = el;
+              }}
+              className="assemble-part"
+              data-part={id}
+              style={{ opacity: 0 }}
+            >
+              <img
+                src={pack.activate.src}
+                alt=""
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ objectPosition: pack.activate.objectPosition }}
+              />
+            </div>
+          ))}
+          <img
+            ref={assembledEl}
+            src={pack.activate.src}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: pack.activate.objectPosition, opacity: 0 }}
+          />
 
           <div
             ref={glowEl}

@@ -1,10 +1,7 @@
 const PACK = {
   landing: { src: "./cinematic/v1/landing.jpg", pos: "center 80%" },
   awaken: { src: "./cinematic/v1/awaken.jpg", pos: "center 40%" },
-  a1: { src: "./cinematic/v1/assembly-01.jpg", pos: "center 42%" },
-  a2: { src: "./cinematic/v1/assembly-02.jpg", pos: "center 38%" },
-  a3: { src: "./cinematic/v1/assembly-03.jpg", pos: "center 42%" },
-  a4: { src: "./cinematic/v1/assembly-04.jpg", pos: "center 42%" },
+  hangar: { src: "./cinematic/v1/hangar.jpg", pos: "center 42%" },
   build: { src: "./cinematic/v1/build.jpg", pos: "center 30%" },
   activateDark: { src: "./cinematic/v1/activate-dark.jpg", pos: "center 42%" },
   activate: { src: "./cinematic/v1/activate.jpg", pos: "center 42%" },
@@ -22,12 +19,11 @@ const COPY = {
   activate: { lines: ["BUILT FOR", "A BRIGHTER", "TOMORROW"] },
   launch: { lines: ["FROM IDEAS", "TO REALITY"] },
   beyond: { lines: ["A PLATFORM", "FOR", "WHAT'S NEXT"] },
-  arrival: { lines: ["NEW IDEAS", "GO FURTHER"] },
-  observation: { lines: ["LOOKING", "FORWARD"] },
+  arrival: { lines: ["NEW IDEAS", "FURTHER"] },
+  observation: { lines: ["EXPLORE", "CREATE", "BUILD FURTHER"] },
   vision: {
     kicker: "OUR VISION",
-    lines: ["SMALL TEAM.", "FOCUSED PRODUCTS.", "BIG IDEAS."],
-    body: "AsterMech Corp is an independent technology company focused on creating simple, useful digital products.",
+    lines: ["PEOPLE.", "TECHNOLOGY.", "A BRIGHTER TOMORROW."],
   },
 };
 
@@ -60,6 +56,9 @@ function hold(p, a, b, c, d) {
   if (p > c) return 1 - smooth(c, d, p);
   return 1;
 }
+function enter(t, start, dur) {
+  return smooth(start, start + dur, t);
+}
 
 function copyHtml(id) {
   const c = COPY[id];
@@ -68,7 +67,6 @@ function copyHtml(id) {
     ${c.kicker ? `<p class="kicker">${c.kicker}</p>` : ""}
     <h2>${c.lines.map((l) => `<span>${l}</span><br/>`).join("")}</h2>
     <span class="rule"></span>
-    ${c.body ? `<p class="body">${c.body}</p>` : ""}
   </div>`;
 }
 
@@ -81,10 +79,6 @@ function buildFilm() {
   const layers = [
     ["landing", PACK.landing],
     ["awaken", PACK.awaken],
-    ["assembly-0", PACK.a1],
-    ["assembly-1", PACK.a2],
-    ["assembly-2", PACK.a3],
-    ["assembly-3", PACK.a4],
     ["build", PACK.build],
     ["activate-dark", PACK.activateDark],
     ["activate", PACK.activate],
@@ -94,9 +88,20 @@ function buildFilm() {
     ["observation", PACK.observation],
     ["vision", PACK.vision],
   ];
+  const partIds = ["head", "chest", "armL", "armR", "legs"];
   stage.innerHTML =
     layers.map(([id, plate]) => imgEl(id, plate)).join("") +
-    `<div class="vignette"></div>
+    `<img data-hangar src="${PACK.hangar.src}" alt="" style="object-position:${PACK.hangar.pos};opacity:0"/>` +
+    partIds
+      .map(
+        (id) =>
+          `<div class="assemble-part" data-part="${id}">
+            <img src="${PACK.activate.src}" alt="" style="object-position:${PACK.activate.pos}"/>
+          </div>`,
+      )
+      .join("") +
+    `<img data-assembled src="${PACK.activate.src}" alt="" style="object-position:${PACK.activate.pos};opacity:0"/>
+     <div class="vignette"></div>
      <div class="hero" data-copy="landing" id="landingCopy">
        <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true">
          <path fill="currentColor" fill-rule="evenodd" d="M16 5 L28 27 H4 Z M16 12.5 L21.2 23 H10.8 Z"/>
@@ -105,7 +110,7 @@ function buildFilm() {
        <p class="kicker">Independent software studio</p>
      </div>
      <div class="hint" id="hint">Scroll<b></b></div>
-     <ol class="rail" id="rail">${Object.keys(BEATS)
+     <ol class="rail">${Object.keys(BEATS)
        .map((id, i) => `<li data-i="${i}">${String(i + 1).padStart(2, "0")}</li>`)
        .join("")}</ol>` +
     Object.keys(COPY)
@@ -118,11 +123,15 @@ function buildFilm() {
   const copies = Object.fromEntries(
     [...stage.querySelectorAll("[data-copy]")].map((el) => [el.dataset.copy, el]),
   );
+  const parts = Object.fromEntries(
+    [...stage.querySelectorAll(".assemble-part")].map((el) => [el.dataset.part, el]),
+  );
+  const hangar = stage.querySelector("[data-hangar]");
+  const assembled = stage.querySelector("[data-assembled]");
   const rail = [...stage.querySelectorAll(".rail li")];
   const hint = document.getElementById("hint");
   const track = document.getElementById("track");
   const order = Object.keys(BEATS);
-  const assemblyIds = ["assembly-0", "assembly-1", "assembly-2", "assembly-3"];
 
   function setLayer(id, op, y = 0, s = 1) {
     const el = imgs[id];
@@ -135,25 +144,29 @@ function buildFilm() {
     const total = track.offsetHeight - innerHeight;
     const p = total <= 0 ? 0 : clamp01(-track.getBoundingClientRect().top / total);
     const beat = (id) => hold(p, ...BEATS[id]);
-
     const land = beat("landing");
     setLayer("landing", land, -land * 2, 1 + land * 0.04);
     setLayer("awaken", beat("awaken"));
 
     const assemblyOp = beat("assembly");
-    const assemblyT = remap(p, BEATS.assembly[0], BEATS.assembly[3]);
-    const n = assemblyIds.length;
-    const f = assemblyT * (n - 1);
-    const i0 = Math.min(n - 1, Math.floor(f));
-    const i1 = Math.min(n - 1, i0 + 1);
-    const mix = f - i0;
-    assemblyIds.forEach((id, i) => {
-      let op = 0;
-      if (i === i0) op = assemblyOp * (1 - mix);
-      if (i === i1) op = Math.max(op, assemblyOp * mix);
-      if (i === i0 && i === i1) op = assemblyOp;
-      setLayer(id, op, 0, 1 + assemblyT * 0.03);
-    });
+    const t = remap(p, BEATS.assembly[0], BEATS.assembly[2]);
+    const head = enter(t, 0.0, 0.16);
+    const chest = enter(t, 0.14, 0.16);
+    const arms = enter(t, 0.32, 0.18);
+    const legs = enter(t, 0.52, 0.2);
+    const locked = smooth(0.78, 0.96, t) * assemblyOp;
+    hangar.style.opacity = String(assemblyOp * (1 - locked * 0.35));
+    assembled.style.opacity = String(locked);
+    const applyPart = (id, op, x, y, s) => {
+      const el = parts[id];
+      el.style.opacity = String(op * assemblyOp);
+      el.style.transform = `translate3d(${x}%, ${y}%, 0) scale(${s})`;
+    };
+    applyPart("head", head, 0, (1 - head) * -34, 1);
+    applyPart("chest", chest, 0, (1 - chest) * 16, 0.84 + 0.16 * chest);
+    applyPart("armL", arms, (1 - arms) * -48, 0, 1);
+    applyPart("armR", arms, (1 - arms) * 48, 0, 1);
+    applyPart("legs", legs, 0, (1 - legs) * 36, 1);
 
     setLayer("build", beat("build"));
     const act = beat("activate");
@@ -201,5 +214,4 @@ document.getElementById("menuBtn").addEventListener("click", () => {
 
 document.getElementById("deskFilm").hidden = false;
 document.getElementById("phoneFilm").hidden = true;
-document.getElementById("phoneFilm").innerHTML = "";
 buildFilm();

@@ -17,7 +17,7 @@ export type Plate = {
   objectPosition: string;
 };
 
-const bust = "v5";
+const bust = "v6";
 
 const v1 = {
   landing: {
@@ -27,6 +27,10 @@ const v1 = {
   awaken: {
     src: `/cinematic/v1/awaken.jpg?${bust}`,
     objectPosition: "center 40%",
+  },
+  hangar: {
+    src: `/cinematic/v1/hangar.jpg?${bust}`,
+    objectPosition: "center 42%",
   },
   assembly: [
     {
@@ -93,4 +97,4 @@ export function getPack(version: MechVersion = MECH_VERSION) {
   return packs[version] ?? packs.v1;
 }
 
-export const PRELOAD_SRCS = [v1.landing.src, v1.awaken.src] as const;
+export const PRELOAD_SRCS = [v1.landing.src, v1.awaken.src, v1.activate.src] as const;

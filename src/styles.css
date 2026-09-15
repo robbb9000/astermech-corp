@@ -78,11 +78,30 @@
     background-color: #05070c;
   }
 
-  .stage-viewport {
-    height: 100vh;
-    height: 100svh;
-    height: 100dvh;
-    min-height: 100vh;
+  .assemble-part {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .assemble-part[data-part="head"] {
+    clip-path: inset(0% 18% 46% 18%);
+  }
+
+  .assemble-part[data-part="chest"] {
+    clip-path: inset(20% 22% 24% 22%);
+  }
+
+  .assemble-part[data-part="armL"] {
+    clip-path: inset(16% 50% 0% 0%);
+  }
+
+  .assemble-part[data-part="armR"] {
+    clip-path: inset(16% 0% 0% 50%);
+  }
+
+  .assemble-part[data-part="legs"] {
+    clip-path: inset(46% 18% 0% 18%);
   }
 
   .stage-vignette {

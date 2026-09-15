@@ -29,7 +29,7 @@ export const Route = createRootRoute({
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
-      { rel: "preload", as: "image", href: "/cinematic/v1/landing.jpg?v=5" },
+      { rel: "preload", as: "image", href: "/cinematic/v1/landing.jpg?v=6" },
     ],
   }),
   component: () => (

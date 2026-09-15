@@ -41,19 +41,18 @@ export const SCENE_COPY: SceneCopy[] = [
   },
   {
     id: "arrival",
-    lines: ["NEW IDEAS", "GO FURTHER"],
+    lines: ["NEW IDEAS", "FURTHER"],
     align: "left",
   },
   {
     id: "observation",
-    lines: ["LOOKING", "FORWARD"],
+    lines: ["EXPLORE", "CREATE", "BUILD FURTHER"],
     align: "left",
   },
   {
     id: "vision",
     kicker: "OUR VISION",
-    lines: ["SMALL TEAM.", "FOCUSED PRODUCTS.", "BIG IDEAS."],
-    body: "AsterMech Corp is an independent technology company focused on creating simple, useful digital products.",
+    lines: ["PEOPLE.", "TECHNOLOGY.", "A BRIGHTER TOMORROW."],
     align: "left",
   },
 ];
