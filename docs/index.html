@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>AsterMech Corp</title>
+    <meta
+      name="description"
+      content="AsterMech Corp is a small independent technology company creating focused digital products."
+    />
+    <meta name="theme-color" content="#05070c" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Outfit:wght@300;400;500&display=swap"
+    />
+    <link rel="stylesheet" href="./site.css" />
+  </head>
+  <body>
+    <a class="skip" href="#products">Skip to products</a>
+    <header class="nav">
+      <a class="mark" href="#top" id="mark">
+        <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+          <path fill="currentColor" fill-rule="evenodd" d="M16 5 L28 27 H4 Z M16 12.5 L21.2 23 H10.8 Z" />
+        </svg>
+        <span>ASTERMECH</span>
+      </a>
+      <nav class="desk-nav">
+        <button type="button" data-go="vision">About</button>
+        <button type="button" data-go="products">Products</button>
+        <button type="button" data-go="contact">Contact</button>
+      </nav>
+      <button type="button" class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+    </header>
+    <div class="menu" id="menu" hidden>
+      <button type="button" data-go="vision">About</button>
+      <button type="button" data-go="products">Products</button>
+      <button type="button" data-go="contact">Contact</button>
+    </div>
+
+    <main id="top">
+      <div id="phoneFilm"></div>
+      <div id="deskFilm" hidden>
+        <div class="track" id="track">
+          <div class="stage" id="stage"></div>
+        </div>
+      </div>
+
+      <section id="products" class="products">
+        <div class="products-grid">
+          <div>
+            <p class="kicker">Our products</p>
+            <h2 class="product-name">JOURNEY</h2>
+            <p class="tagline">Track your journey.</p>
+            <p class="body">
+              A simple personal fitness tracker built around routines, daily progress and
+              consistency.
+            </p>
+            <p class="footnote">More products coming soon.</p>
+          </div>
+          <div class="phones">
+            <div class="phone">
+              <p class="kicker">Today</p>
+              <ul>
+                <li>Workout <span>✓</span></li>
+                <li>Nutrition <span>✓</span></li>
+                <li>Cardio <span>✓</span></li>
+                <li>Water <span>✓</span></li>
+                <li>Sleep <span>✓</span></li>
+              </ul>
+            </div>
+            <div class="phone">
+              <p class="kicker">Progress</p>
+              <div class="bars">
+                <i style="height:45%"></i><i style="height:62%"></i><i style="height:50%"></i>
+                <i style="height:78%"></i><i style="height:70%"></i><i style="height:88%"></i>
+                <i style="height:60%"></i>
+              </div>
+              <div class="stats">
+                <div><p class="kicker">Consistency</p><strong>88%</strong></div>
+                <div><p class="kicker">Streak</p><strong>12</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="finale">
+        <img src="./cinematic/v1/final.jpg" alt="" />
+        <div class="finale-copy">
+          <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true">
+            <path fill="currentColor" fill-rule="evenodd" d="M16 5 L28 27 H4 Z M16 12.5 L21.2 23 H10.8 Z" />
+          </svg>
+          <h2>ASTERMECH CORP</h2>
+          <p>A small independent technology company creating focused digital products.</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="./site.js"></script>
+  </body>
+</html>
