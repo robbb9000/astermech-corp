@@ -202,7 +202,7 @@ html, body {
 .landing .hero svg { margin-bottom: 1.4rem; }
 .assembly-track {
   position: relative;
-  height: 720vh;
+  height: 800vh;
   background: #05070c;
 }
 .assembly-stage {
@@ -214,43 +214,11 @@ html, body {
   background: #05070c;
   z-index: 1;
 }
-.assembly-stage .hangar {
+.assembly-stage canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-}
-.assembly-rig {
-  position: absolute;
-  left: 50%;
-  top: 6%;
-  width: min(38vh, 46vw);
-  height: 88%;
-  transform: translate3d(-50%, 18%, 0) scale(2.05);
-  transform-origin: 50% 8%;
-  pointer-events: none;
-}
-.assembly-sprite {
-  position: absolute;
-  pointer-events: none;
-}
-.assembly-sprite img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 12px 18px rgb(0 0 0 / 0.45));
-}
-.assembly-eyes {
-  position: absolute;
-  left: 38%;
-  top: 7.5%;
-  width: 24%;
-  height: 4%;
-  border-radius: 999px;
-  background: rgb(229 57 53 / 0.9);
-  filter: blur(10px);
-  opacity: 0;
 }
 .track { height: 1400vh; position: relative; }
 .stage {
