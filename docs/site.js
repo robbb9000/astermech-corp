@@ -150,10 +150,10 @@ function buildFilm() {
 
     const assemblyOp = beat("assembly");
     const t = remap(p, BEATS.assembly[0], BEATS.assembly[2]);
-    const head = enter(t, 0.0, 0.16);
-    const chest = enter(t, 0.14, 0.16);
-    const arms = enter(t, 0.32, 0.18);
-    const legs = enter(t, 0.52, 0.2);
+    const head = enter(t, 0.0, 0.18);
+    const chest = enter(t, 0.16, 0.18);
+    const arms = enter(t, 0.36, 0.2);
+    const legs = enter(t, 0.58, 0.2);
     const locked = smooth(0.78, 0.96, t) * assemblyOp;
     hangar.style.opacity = String(assemblyOp * (1 - locked * 0.35));
     assembled.style.opacity = String(locked);
@@ -162,11 +162,11 @@ function buildFilm() {
       el.style.opacity = String(op * assemblyOp);
       el.style.transform = `translate3d(${x}%, ${y}%, 0) scale(${s})`;
     };
-    applyPart("head", head, 0, (1 - head) * -34, 1);
-    applyPart("chest", chest, 0, (1 - chest) * 16, 0.84 + 0.16 * chest);
-    applyPart("armL", arms, (1 - arms) * -48, 0, 1);
-    applyPart("armR", arms, (1 - arms) * 48, 0, 1);
-    applyPart("legs", legs, 0, (1 - legs) * 36, 1);
+    applyPart("head", head, 0, (1 - head) * -48, 1);
+    applyPart("chest", chest, 0, (1 - chest) * 22, 0.78 + 0.22 * chest);
+    applyPart("armL", arms, (1 - arms) * -62, 0, 1);
+    applyPart("armR", arms, (1 - arms) * 62, 0, 1);
+    applyPart("legs", legs, 0, (1 - legs) * 48, 1);
 
     setLayer("build", beat("build"));
     const act = beat("activate");

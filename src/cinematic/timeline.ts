@@ -96,16 +96,16 @@ function partEnter(t: number, start: number, dur: number) {
 }
 
 export function computeParts(t: number): PartState[] {
-  const head = partEnter(t, 0.0, 0.16);
-  const chest = partEnter(t, 0.14, 0.16);
-  const arms = partEnter(t, 0.32, 0.18);
-  const legs = partEnter(t, 0.52, 0.2);
+  const head = partEnter(t, 0.0, 0.18);
+  const chest = partEnter(t, 0.16, 0.18);
+  const arms = partEnter(t, 0.36, 0.2);
+  const legs = partEnter(t, 0.58, 0.2);
   return [
-    { id: "head", opacity: head, x: 0, y: (1 - head) * -34, scale: 1 },
-    { id: "chest", opacity: chest, x: 0, y: (1 - chest) * 16, scale: 0.84 + 0.16 * chest },
-    { id: "armL", opacity: arms, x: (1 - arms) * -48, y: 0, scale: 1 },
-    { id: "armR", opacity: arms, x: (1 - arms) * 48, y: 0, scale: 1 },
-    { id: "legs", opacity: legs, x: 0, y: (1 - legs) * 36, scale: 1 },
+    { id: "head", opacity: head, x: 0, y: (1 - head) * -48, scale: 1 },
+    { id: "chest", opacity: chest, x: 0, y: (1 - chest) * 22, scale: 0.78 + 0.22 * chest },
+    { id: "armL", opacity: arms, x: (1 - arms) * -62, y: 0, scale: 1 },
+    { id: "armR", opacity: arms, x: (1 - arms) * 62, y: 0, scale: 1 },
+    { id: "legs", opacity: legs, x: 0, y: (1 - legs) * 48, scale: 1 },
   ];
 }
 
