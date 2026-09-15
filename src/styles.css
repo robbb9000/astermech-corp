@@ -78,30 +78,28 @@
     background-color: #05070c;
   }
 
+  .assemble-rig {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 28%;
+    will-change: transform;
+    pointer-events: none;
+  }
+
   .assemble-part {
     position: absolute;
     inset: 0;
     pointer-events: none;
+    will-change: transform, opacity;
   }
 
-  .assemble-part[data-part="head"] {
-    clip-path: inset(0% 18% 46% 18%);
-  }
-
-  .assemble-part[data-part="chest"] {
-    clip-path: inset(20% 22% 24% 22%);
-  }
-
-  .assemble-part[data-part="armL"] {
-    clip-path: inset(16% 50% 0% 0%);
-  }
-
-  .assemble-part[data-part="armR"] {
-    clip-path: inset(16% 0% 0% 50%);
-  }
-
-  .assemble-part[data-part="legs"] {
-    clip-path: inset(46% 18% 0% 18%);
+  .assemble-part img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
   }
 
   .stage-vignette {

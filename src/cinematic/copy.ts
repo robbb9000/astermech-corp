@@ -15,11 +15,6 @@ export const SCENE_COPY: SceneCopy[] = [
     align: "left",
   },
   {
-    id: "assembly",
-    lines: ["SMALL PIECES", "BIG", "POSSIBILITIES"],
-    align: "left",
-  },
-  {
     id: "build",
     lines: ["FOCUSED.", "PRACTICAL.", "REAL IMPACT."],
     align: "left",

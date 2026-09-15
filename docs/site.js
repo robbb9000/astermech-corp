@@ -1,7 +1,8 @@
 const PACK = {
   landing: { src: "./cinematic/v1/landing.jpg", pos: "center 80%" },
   awaken: { src: "./cinematic/v1/awaken.jpg", pos: "center 40%" },
-  hangar: { src: "./cinematic/v1/hangar.jpg", pos: "center 42%" },
+  hangar: { src: "./cinematic/v1/parts/hangar.jpg", pos: "center center" },
+  body: { src: "./cinematic/v1/parts/body.jpg", pos: "center center" },
   build: { src: "./cinematic/v1/build.jpg", pos: "center 30%" },
   activateDark: { src: "./cinematic/v1/activate-dark.jpg", pos: "center 42%" },
   activate: { src: "./cinematic/v1/activate.jpg", pos: "center 42%" },
@@ -12,25 +13,46 @@ const PACK = {
   vision: { src: "./cinematic/v1/vision.jpg", pos: "center 42%" },
 };
 
+const PARTS = [
+  { id: "head", src: "./cinematic/v1/parts/head.png", in0: 0.0, in1: 0.08, x: 0, y: -6, r: 0 },
+  { id: "torso", src: "./cinematic/v1/parts/torso.png", in0: 0.1, in1: 0.24, x: 0, y: 42, r: 0 },
+  { id: "hip", src: "./cinematic/v1/parts/hip.png", in0: 0.2, in1: 0.3, x: 0, y: 28, r: 0 },
+  { id: "armUpperL", src: "./cinematic/v1/parts/armUpperL.png", in0: 0.25, in1: 0.36, x: -46, y: -6, r: 22 },
+  { id: "armUpperR", src: "./cinematic/v1/parts/armUpperR.png", in0: 0.25, in1: 0.36, x: 46, y: -6, r: -22 },
+  { id: "forearmL", src: "./cinematic/v1/parts/forearmL.png", in0: 0.33, in1: 0.42, x: -54, y: 16, r: 18 },
+  { id: "forearmR", src: "./cinematic/v1/parts/forearmR.png", in0: 0.33, in1: 0.42, x: 54, y: 16, r: -18 },
+  { id: "handL", src: "./cinematic/v1/parts/handL.png", in0: 0.4, in1: 0.5, x: -38, y: 24, r: 12 },
+  { id: "handR", src: "./cinematic/v1/parts/handR.png", in0: 0.4, in1: 0.5, x: 38, y: 24, r: -12 },
+  { id: "legUpperL", src: "./cinematic/v1/parts/legUpperL.png", in0: 0.5, in1: 0.6, x: -10, y: 38, r: 8 },
+  { id: "legUpperR", src: "./cinematic/v1/parts/legUpperR.png", in0: 0.5, in1: 0.6, x: 10, y: 38, r: -8 },
+  { id: "legLowerL", src: "./cinematic/v1/parts/legLowerL.png", in0: 0.58, in1: 0.68, x: -8, y: 46, r: 6 },
+  { id: "legLowerR", src: "./cinematic/v1/parts/legLowerR.png", in0: 0.58, in1: 0.68, x: 8, y: 46, r: -6 },
+  { id: "footL", src: "./cinematic/v1/parts/footL.png", in0: 0.7, in1: 0.8, x: -6, y: 36, r: 0 },
+  { id: "footR", src: "./cinematic/v1/parts/footR.png", in0: 0.7, in1: 0.8, x: 6, y: 36, r: 0 },
+];
+
+const ASM_COPY = [
+  { at: 0, lines: ["IDEAS", "TAKE", "SHAPE"] },
+  { at: 0.28, lines: ["PIECE", "BY PIECE"] },
+  { at: 0.55, lines: ["BUILT", "WITH PURPOSE"] },
+  { at: 0.88, lines: ["READY."] },
+];
+
 const COPY = {
   awaken: { lines: ["IDEAS", "TAKE", "SHAPE"] },
-  assembly: { lines: ["SMALL PIECES", "BIG", "POSSIBILITIES"] },
   build: { lines: ["FOCUSED.", "PRACTICAL.", "REAL IMPACT."] },
   activate: { lines: ["BUILT FOR", "A BRIGHTER", "TOMORROW"] },
   launch: { lines: ["FROM IDEAS", "TO REALITY"] },
   beyond: { lines: ["A PLATFORM", "FOR", "WHAT'S NEXT"] },
   arrival: { lines: ["NEW IDEAS", "FURTHER"] },
   observation: { lines: ["EXPLORE", "CREATE", "BUILD FURTHER"] },
-  vision: {
-    kicker: "OUR VISION",
-    lines: ["PEOPLE.", "TECHNOLOGY.", "A BRIGHTER TOMORROW."],
-  },
+  vision: { kicker: "OUR VISION", lines: ["PEOPLE.", "TECHNOLOGY.", "A BRIGHTER TOMORROW."] },
 };
 
 const BEATS = {
-  landing: [-0.02, 0, 0.03, 0.06],
-  awaken: [0.035, 0.065, 0.11, 0.145],
-  assembly: [0.11, 0.145, 0.50, 0.545],
+  landing: [-0.02, 0, 0.03, 0.055],
+  awaken: [0.03, 0.055, 0.09, 0.12],
+  assembly: [0.09, 0.12, 0.52, 0.56],
   build: [0.515, 0.55, 0.60, 0.635],
   activate: [0.61, 0.645, 0.72, 0.755],
   launch: [0.73, 0.765, 0.82, 0.85],
@@ -40,24 +62,14 @@ const BEATS = {
   vision: [0.98, 0.992, 1.05, 1.08],
 };
 
-function clamp01(n) {
-  return n < 0 ? 0 : n > 1 ? 1 : n;
-}
-function remap(v, a, b) {
-  return b === a ? 0 : clamp01((v - a) / (b - a));
-}
-function smooth(e0, e1, x) {
-  const t = remap(x, e0, e1);
-  return t * t * (3 - 2 * t);
-}
+function clamp01(n) { return n < 0 ? 0 : n > 1 ? 1 : n; }
+function remap(v, a, b) { return b === a ? 0 : clamp01((v - a) / (b - a)); }
+function smooth(e0, e1, x) { const t = remap(x, e0, e1); return t * t * (3 - 2 * t); }
 function hold(p, a, b, c, d) {
   if (p <= a || p >= d) return 0;
   if (p < b) return smooth(a, b, p);
   if (p > c) return 1 - smooth(c, d, p);
   return 1;
-}
-function enter(t, start, dur) {
-  return smooth(start, start + dur, t);
 }
 
 function copyHtml(id) {
@@ -76,31 +88,14 @@ function imgEl(id, plate) {
 
 function buildFilm() {
   const stage = document.getElementById("stage");
-  const layers = [
-    ["landing", PACK.landing],
-    ["awaken", PACK.awaken],
-    ["build", PACK.build],
-    ["activate-dark", PACK.activateDark],
-    ["activate", PACK.activate],
-    ["launch", PACK.launch],
-    ["beyond", PACK.beyond],
-    ["arrival", PACK.arrival],
-    ["observation", PACK.observation],
-    ["vision", PACK.vision],
-  ];
-  const partIds = ["head", "chest", "armL", "armR", "legs"];
+  const layers = ["landing","awaken","build","activate-dark","activate","launch","beyond","arrival","observation","vision"];
   stage.innerHTML =
-    layers.map(([id, plate]) => imgEl(id, plate)).join("") +
-    `<img data-hangar src="${PACK.hangar.src}" alt="" style="object-position:${PACK.hangar.pos};opacity:0"/>` +
-    partIds
-      .map(
-        (id) =>
-          `<div class="assemble-part" data-part="${id}">
-            <img src="${PACK.activate.src}" alt="" style="object-position:${PACK.activate.pos}"/>
-          </div>`,
-      )
-      .join("") +
-    `<img data-assembled src="${PACK.activate.src}" alt="" style="object-position:${PACK.activate.pos};opacity:0"/>
+    layers.map((id) => imgEl(id, PACK[id] || PACK.activate)).join("") +
+    `<img data-hangar src="${PACK.hangar.src}" alt="" style="opacity:0"/>
+     <div class="assemble-rig" data-rig>
+       ${PARTS.map((p) => `<div class="assemble-part" data-part="${p.id}"><img src="${p.src}" alt=""/></div>`).join("")}
+       <img data-assembled src="${PACK.body.src}" alt="" style="opacity:0"/>
+     </div>
      <div class="vignette"></div>
      <div class="hero" data-copy="landing" id="landingCopy">
        <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true">
@@ -109,25 +104,22 @@ function buildFilm() {
        <h1>ASTERMECH CORP</h1>
        <p class="kicker">Independent software studio</p>
      </div>
+     <div class="copy" data-asm-copy style="opacity:0">
+       <h2 data-asm-lines></h2>
+       <span class="rule"></span>
+     </div>
      <div class="hint" id="hint">Scroll<b></b></div>
-     <ol class="rail">${Object.keys(BEATS)
-       .map((id, i) => `<li data-i="${i}">${String(i + 1).padStart(2, "0")}</li>`)
-       .join("")}</ol>` +
-    Object.keys(COPY)
-      .map((id) => copyHtml(id))
-      .join("");
+     <ol class="rail">${Object.keys(BEATS).map((id, i) => `<li>${String(i + 1).padStart(2, "0")}</li>`).join("")}</ol>` +
+    Object.keys(COPY).map((id) => copyHtml(id)).join("");
 
-  const imgs = Object.fromEntries(
-    [...stage.querySelectorAll("img[data-layer]")].map((el) => [el.dataset.layer, el]),
-  );
-  const copies = Object.fromEntries(
-    [...stage.querySelectorAll("[data-copy]")].map((el) => [el.dataset.copy, el]),
-  );
-  const parts = Object.fromEntries(
-    [...stage.querySelectorAll(".assemble-part")].map((el) => [el.dataset.part, el]),
-  );
+  const imgs = Object.fromEntries([...stage.querySelectorAll("img[data-layer]")].map((el) => [el.dataset.layer, el]));
+  const copies = Object.fromEntries([...stage.querySelectorAll("[data-copy]")].map((el) => [el.dataset.copy, el]));
+  const partEls = Object.fromEntries([...stage.querySelectorAll(".assemble-part")].map((el) => [el.dataset.part, el]));
   const hangar = stage.querySelector("[data-hangar]");
   const assembled = stage.querySelector("[data-assembled]");
+  const rig = stage.querySelector("[data-rig]");
+  const asmCopy = stage.querySelector("[data-asm-copy]");
+  const asmLines = stage.querySelector("[data-asm-lines]");
   const rail = [...stage.querySelectorAll(".rail li")];
   const hint = document.getElementById("hint");
   const track = document.getElementById("track");
@@ -150,23 +142,23 @@ function buildFilm() {
 
     const assemblyOp = beat("assembly");
     const t = remap(p, BEATS.assembly[0], BEATS.assembly[2]);
-    const head = enter(t, 0.0, 0.18);
-    const chest = enter(t, 0.16, 0.18);
-    const arms = enter(t, 0.36, 0.2);
-    const legs = enter(t, 0.58, 0.2);
-    const locked = smooth(0.78, 0.96, t) * assemblyOp;
-    hangar.style.opacity = String(assemblyOp * (1 - locked * 0.35));
-    assembled.style.opacity = String(locked);
-    const applyPart = (id, op, x, y, s) => {
-      const el = parts[id];
-      el.style.opacity = String(op * assemblyOp);
-      el.style.transform = `translate3d(${x}%, ${y}%, 0) scale(${s})`;
-    };
-    applyPart("head", head, 0, (1 - head) * -48, 1);
-    applyPart("chest", chest, 0, (1 - chest) * 22, 0.78 + 0.22 * chest);
-    applyPart("armL", arms, (1 - arms) * -62, 0, 1);
-    applyPart("armR", arms, (1 - arms) * 62, 0, 1);
-    applyPart("legs", legs, 0, (1 - legs) * 48, 1);
+    hangar.style.opacity = String(assemblyOp);
+    rig.style.opacity = assemblyOp > 0.01 ? "1" : "0";
+    const camS = 1.52 - 0.52 * smooth(0.05, 0.92, t);
+    const camY = (1 - smooth(0, 0.88, t)) * 16;
+    rig.style.transform = `translate3d(0, ${camY}%, 0) scale(${camS})`;
+    assembled.style.opacity = String(assemblyOp * smooth(0.8, 0.93, t));
+    PARTS.forEach((def) => {
+      const k = smooth(def.in0, def.in1, t);
+      const op = (def.id === "head" ? 1 : t >= def.in0 - 0.02 ? k : 0) * assemblyOp;
+      const el = partEls[def.id];
+      el.style.opacity = String(op);
+      el.style.transform = `translate3d(${def.x * (1 - k)}%, ${def.y * (1 - k)}%, 0) rotate(${def.r * (1 - k)}deg)`;
+    });
+    let lines = ASM_COPY[0].lines;
+    ASM_COPY.forEach((c) => { if (t >= c.at) lines = c.lines; });
+    asmLines.innerHTML = lines.map((l) => `<span>${l}</span><br/>`).join("");
+    asmCopy.style.opacity = String(assemblyOp);
 
     setLayer("build", beat("build"));
     const act = beat("activate");
@@ -183,12 +175,10 @@ function buildFilm() {
     copies.landing.style.opacity = String(land);
     hint.style.opacity = String(land);
     Object.keys(COPY).forEach((id) => {
-      copies[id].style.opacity = String(beat(id));
+      if (copies[id]) copies[id].style.opacity = String(beat(id));
     });
     let railIndex = 0;
-    order.forEach((id, i) => {
-      if (p >= BEATS[id][0]) railIndex = i;
-    });
+    order.forEach((id, i) => { if (p >= BEATS[id][0]) railIndex = i; });
     rail.forEach((el, i) => el.classList.toggle("on", i === railIndex));
     document.getElementById("mark").classList.toggle("is-on", scrollY > 80);
   }
@@ -203,15 +193,11 @@ function go(target) {
   const el = document.getElementById(target);
   if (el) el.scrollIntoView({ behavior: "smooth" });
 }
-
-document.querySelectorAll("[data-go]").forEach((btn) => {
-  btn.addEventListener("click", () => go(btn.dataset.go));
-});
+document.querySelectorAll("[data-go]").forEach((btn) => btn.addEventListener("click", () => go(btn.dataset.go)));
 document.getElementById("menuBtn").addEventListener("click", () => {
   const menu = document.getElementById("menu");
   menu.hidden = !menu.hidden;
 });
-
 document.getElementById("deskFilm").hidden = false;
 document.getElementById("phoneFilm").hidden = true;
 buildFilm();

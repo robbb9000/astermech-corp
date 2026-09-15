@@ -10,14 +10,13 @@ import {
   BEAT_ORDER,
   CINEMATIC_VH,
   computeFrame,
-  PART_ORDER,
   progressForBeat,
   scrollYForProgress,
   type BeatId,
   type FrameState,
   type LayerState,
-  type PartId,
 } from "@/cinematic/timeline";
+import { BODY_SRC, HANGAR_SRC, PART_DEFS } from "@/cinematic/parts";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 function readProgress(track: HTMLElement) {
@@ -37,6 +36,8 @@ function applyFrame(
   hangarEl: HTMLImageElement | null,
   assembledEl: HTMLImageElement | null,
   partEls: Record<string, HTMLElement | null>,
+  rigEl: HTMLElement | null,
+  assemblyCopyEl: HTMLElement | null,
 ) {
   for (const layer of frame.layers) {
     const el = layerEls[layer.id];
@@ -55,14 +56,23 @@ function applyFrame(
     landingEl.style.visibility = frame.landingOpacity > 0.01 ? "visible" : "hidden";
   }
   if (hintEl) hintEl.style.opacity = frame.scrollHint.toFixed(3);
-  if (glowEl) glowEl.style.opacity = (frame.eyesGlow * 0.55).toFixed(3);
+  if (glowEl) glowEl.style.opacity = (frame.eyesGlow * 0.7).toFixed(3);
   if (hangarEl) hangarEl.style.opacity = frame.hangarOpacity.toFixed(3);
   if (assembledEl) assembledEl.style.opacity = frame.assembledOpacity.toFixed(3);
+  if (rigEl) {
+    rigEl.style.opacity = frame.hangarOpacity > 0.01 ? "1" : "0";
+    rigEl.style.transform = `translate3d(0, ${frame.cameraY.toFixed(2)}%, 0) scale(${frame.cameraScale.toFixed(3)})`;
+  }
   for (const part of frame.parts) {
     const el = partEls[part.id];
     if (!el) continue;
     el.style.opacity = part.opacity.toFixed(3);
-    el.style.transform = `translate3d(${part.x.toFixed(2)}%, ${part.y.toFixed(2)}%, 0) scale(${part.scale.toFixed(3)})`;
+    el.style.transform = `translate3d(${part.x.toFixed(2)}%, ${part.y.toFixed(2)}%, 0) rotate(${part.rotate.toFixed(2)}deg) scale(${part.scale.toFixed(3)})`;
+  }
+  if (assemblyCopyEl) {
+    assemblyCopyEl.style.opacity = frame.assemblyCopy.toFixed(3);
+    const title = assemblyCopyEl.querySelector("[data-assembly-lines]");
+    if (title) title.innerHTML = frame.assemblyCopyLines.map((l) => `<span class="block">${l}</span>`).join("");
   }
   railEls.forEach((el, i) => {
     if (!el) return;
@@ -81,6 +91,8 @@ export function Experience() {
   const hangarEl = useRef<HTMLImageElement>(null);
   const assembledEl = useRef<HTMLImageElement>(null);
   const partEls = useRef<Record<string, HTMLElement | null>>({});
+  const rigEl = useRef<HTMLDivElement>(null);
+  const assemblyCopyEl = useRef<HTMLDivElement>(null);
   const liveRef = useRef<string[]>(["landing"]);
   const lastFrame = useRef<FrameState | null>(null);
   const reduced = useReducedMotion();
@@ -123,6 +135,8 @@ export function Experience() {
       hangarEl.current,
       assembledEl.current,
       partEls.current,
+      rigEl.current,
+      assemblyCopyEl.current,
     );
     const next = frame.layers.filter((l) => l.opacity > 0.02).map((l) => l.id);
     if (next.length === 0) next.push("landing");
@@ -228,39 +242,47 @@ export function Experience() {
 
           <img
             ref={hangarEl}
-            src={pack.hangar.src}
+            src={HANGAR_SRC}
             alt=""
             draggable={false}
             className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: pack.hangar.objectPosition, opacity: 0 }}
+            style={{ opacity: 0 }}
           />
-          {PART_ORDER.map((id: PartId) => (
-            <div
-              key={id}
-              ref={(el) => {
-                partEls.current[id] = el;
-              }}
-              className="assemble-part"
-              data-part={id}
+          <div
+            ref={rigEl}
+            className="assemble-rig"
+            style={{ opacity: 0 }}
+          >
+            {PART_DEFS.map((part) => (
+              <div
+                key={part.id}
+                ref={(el) => {
+                  partEls.current[part.id] = el;
+                }}
+                className="assemble-part"
+                data-part={part.id}
+                style={{ opacity: 0 }}
+              >
+                <img src={part.src} alt="" draggable={false} />
+              </div>
+            ))}
+            <img
+              ref={assembledEl}
+              src={BODY_SRC}
+              alt=""
+              draggable={false}
+              className="absolute inset-0 h-full w-full object-cover"
               style={{ opacity: 0 }}
-            >
-              <img
-                src={pack.activate.src}
-                alt=""
-                draggable={false}
-                className="absolute inset-0 h-full w-full object-cover"
-                style={{ objectPosition: pack.activate.objectPosition }}
-              />
-            </div>
-          ))}
-          <img
-            ref={assembledEl}
-            src={pack.activate.src}
-            alt=""
-            draggable={false}
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: pack.activate.objectPosition, opacity: 0 }}
-          />
+            />
+          </div>
+          <div
+            ref={assemblyCopyEl}
+            className="stage-copy pointer-events-none"
+            style={{ opacity: 0 }}
+          >
+            <h2 className="cinematic-title text-cinematic text-fg" data-assembly-lines />
+            <span className="mt-5 block h-px w-8 bg-signal" />
+          </div>
 
           <div
             ref={glowEl}

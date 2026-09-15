@@ -1,7 +1,8 @@
 import { getPack, type Plate } from "./assets";
 import { SCENE_COPY, type SceneCopy } from "./copy";
+import { ASSEMBLY_COPY, PART_DEFS, type PartId } from "./parts";
 
-export const CINEMATIC_VH = 1800;
+export const CINEMATIC_VH = 2000;
 
 export function clamp01(n: number) {
   return n < 0 ? 0 : n > 1 ? 1 : n;
@@ -44,9 +45,9 @@ export type BeatId =
 
 export const BEATS: Record<BeatId, { in0: number; in1: number; out0: number; out1: number }> =
   {
-    landing: { in0: -0.02, in1: 0.0, out0: 0.03, out1: 0.06 },
-    awaken: { in0: 0.035, in1: 0.065, out0: 0.11, out1: 0.145 },
-    assembly: { in0: 0.11, in1: 0.145, out0: 0.50, out1: 0.545 },
+    landing: { in0: -0.02, in1: 0.0, out0: 0.03, out1: 0.055 },
+    awaken: { in0: 0.03, in1: 0.055, out0: 0.09, out1: 0.12 },
+    assembly: { in0: 0.09, in1: 0.12, out0: 0.52, out1: 0.56 },
     build: { in0: 0.515, in1: 0.55, out0: 0.60, out1: 0.635 },
     activate: { in0: 0.61, in1: 0.645, out0: 0.72, out1: 0.755 },
     launch: { in0: 0.73, in1: 0.765, out0: 0.82, out1: 0.85 },
@@ -79,34 +80,28 @@ export type LayerState = {
   armed: boolean;
 };
 
-export type PartId = "head" | "chest" | "armL" | "armR" | "legs";
-
 export type PartState = {
   id: PartId;
   opacity: number;
   x: number;
   y: number;
+  rotate: number;
   scale: number;
 };
 
-export const PART_ORDER: PartId[] = ["head", "chest", "armL", "armR", "legs"];
-
-function partEnter(t: number, start: number, dur: number) {
-  return smoothstep(start, start + dur, t);
-}
-
 export function computeParts(t: number): PartState[] {
-  const head = partEnter(t, 0.0, 0.18);
-  const chest = partEnter(t, 0.16, 0.18);
-  const arms = partEnter(t, 0.36, 0.2);
-  const legs = partEnter(t, 0.58, 0.2);
-  return [
-    { id: "head", opacity: head, x: 0, y: (1 - head) * -48, scale: 1 },
-    { id: "chest", opacity: chest, x: 0, y: (1 - chest) * 22, scale: 0.78 + 0.22 * chest },
-    { id: "armL", opacity: arms, x: (1 - arms) * -62, y: 0, scale: 1 },
-    { id: "armR", opacity: arms, x: (1 - arms) * 62, y: 0, scale: 1 },
-    { id: "legs", opacity: legs, x: 0, y: (1 - legs) * 48, scale: 1 },
-  ];
+  return PART_DEFS.map((def) => {
+    const k = smoothstep(def.in0, def.in1, t);
+    const visible = def.id === "head" ? 1 : t >= def.in0 - 0.02 ? k : 0;
+    return {
+      id: def.id,
+      opacity: visible,
+      x: def.x * (1 - k),
+      y: def.y * (1 - k),
+      rotate: def.rotate * (1 - k),
+      scale: 1,
+    };
+  });
 }
 
 export type FrameState = {
@@ -120,6 +115,11 @@ export type FrameState = {
   hangarOpacity: number;
   parts: PartState[];
   assembledOpacity: number;
+  assemblyT: number;
+  cameraScale: number;
+  cameraY: number;
+  assemblyCopy: number;
+  assemblyCopyLines: readonly string[];
 };
 
 function ken(local: number, reduced: boolean) {
@@ -164,11 +164,19 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
 
   const assemblyOp = beatOpacity(p, "assembly");
   const assemblyT = remap(p, BEATS.assembly.in0, BEATS.assembly.out0);
-  const parts = computeParts(reduced ? 1 : assemblyT).map((part) => ({
+  const t = reduced ? 1 : assemblyT;
+  const parts = computeParts(t).map((part) => ({
     ...part,
     opacity: part.opacity * assemblyOp,
   }));
-  const assembledOpacity = assemblyOp * smoothstep(0.78, 0.96, assemblyT);
+  const assembledOpacity = assemblyOp * smoothstep(0.8, 0.93, t);
+  const cameraScale = 1.52 - 0.52 * smoothstep(0.05, 0.92, t);
+  const cameraY = (1 - smoothstep(0.0, 0.88, t)) * 16;
+  let assemblyCopyLines: readonly string[] = ASSEMBLY_COPY[0].lines;
+  for (const block of ASSEMBLY_COPY) {
+    if (t >= block.at) assemblyCopyLines = block.lines;
+  }
+  const assemblyEyes = assemblyOp * smoothstep(0.88, 0.97, t);
 
   const buildOp = beatOpacity(p, "build");
   layers.push(
@@ -232,6 +240,7 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
       beat.out1 - 0.008,
     );
   }
+  copy.assembly = 0;
 
   let railIndex = 0;
   let best = -1;
@@ -248,12 +257,17 @@ export function computeFrame(p: number, reduced: boolean): FrameState {
     copy,
     landingOpacity: holdFade(p, -0.02, 0, 0.028, 0.07),
     scrollHint: holdFade(p, -0.02, 0, 0.012, 0.05),
-    eyesGlow: actOp * eyes,
+    eyesGlow: Math.max(actOp * eyes, assemblyEyes),
     railIndex,
     progress: p,
-    hangarOpacity: assemblyOp * (1 - assembledOpacity * 0.35),
+    hangarOpacity: assemblyOp,
     parts,
     assembledOpacity,
+    assemblyT: t,
+    cameraScale: reduced ? 1 : cameraScale,
+    cameraY: reduced ? 0 : cameraY,
+    assemblyCopy: assemblyOp,
+    assemblyCopyLines,
   };
 }
 
